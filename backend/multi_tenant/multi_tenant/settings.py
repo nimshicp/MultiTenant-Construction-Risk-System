@@ -25,21 +25,38 @@ SECRET_KEY = 'django-insecure-qbh3i-c03xmq!4a=i6$703qp-mmflrs81z*#r0!3%io%41vy^s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.localhost', '127.0.0.1']
 
+PUBLIC_SCHEMA_NAME = 'public'
 
-# Application definition
+SHARED_APPS = [
+    'django_tenants',
+    'customers',
 
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.admin',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
-    'accounts'
 ]
+
+TENANT_APPS = [
+    'accounts',
+]
+
+INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+
+TENANT_MODEL = "customers.Client"
+TENANT_DOMAIN_MODEL = "customers.Domain"
+
+DATABASE_ROUTERS = (
+    'django_tenants.routers.TenantSyncRouter',
+)
+
+AUTH_USER_MODEL = 'accounts.UserProfile'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -48,6 +65,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'django_tenants.middleware.main.TenantMainMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -56,6 +74,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
 
 ROOT_URLCONF = 'multi_tenant.urls'
 
@@ -82,7 +102,7 @@ WSGI_APPLICATION = 'multi_tenant.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django_tenants.postgresql_backend', 
         'NAME': 'multi_tenant_db',
         'USER': 'postgres',
         'PASSWORD': 'nims@123',
@@ -126,3 +146,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
