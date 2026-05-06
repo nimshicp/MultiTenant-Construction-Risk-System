@@ -7,7 +7,7 @@ from .views import (
     PlatformLoginView,
     PlatformLogoutView,
     PlatformRefreshTokenView,
-    PlatformTenantsView,
+    
 )
 
 

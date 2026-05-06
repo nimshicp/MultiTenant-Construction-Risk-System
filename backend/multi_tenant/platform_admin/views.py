@@ -64,6 +64,7 @@ class PlatformLoginView(APIView):
             {
                 "access": str(refresh.access_token),
                 "platform_admin": PlatformAdminSerializer(admin).data,
+                "user_type": "platform_admin"
             }
         )
 

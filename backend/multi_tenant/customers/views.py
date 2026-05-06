@@ -56,6 +56,6 @@ class CompanySignupView(APIView):
             'success': True,
             'message': f'{data["company_name"]} registered successfully',
             'subdomain': subdomain,
-            'login_url': f"http://{subdomain}.localhost:8000/api/auth/login",
+            'login_url': f"http://{subdomain}.localhost:8000/api/auth/login/",
             'admin_email': data['manager_email']
         }, status=201)
