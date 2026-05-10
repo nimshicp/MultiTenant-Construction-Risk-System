@@ -16,6 +16,11 @@ class CurrentUserView(APIView):
 class CreateProjectManagerView(APIView):
     permission_classes = [IsAuthenticated, IsCompanyAdmin]
 
+    def get(self, request):
+        from .models import User
+        pms = User.objects.filter(role="PROJECT_MANAGER")
+        return Response(UserSerializer(pms, many=True).data)
+
     def post(self, request):
         serializer = CreateUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

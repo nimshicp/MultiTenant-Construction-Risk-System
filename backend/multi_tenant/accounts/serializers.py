@@ -7,11 +7,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ["phone", "designation"]
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(read_only=True)
+    profile = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ["id", "email", "username", "name", "role", "profile"]
+
+    def get_profile(self, obj):
+        try:
+            return UserProfileSerializer(obj.profile).data
+        except Exception:
+            # Handles RelatedObjectDoesNotExist for superusers
+            return None
 
 class CreateUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

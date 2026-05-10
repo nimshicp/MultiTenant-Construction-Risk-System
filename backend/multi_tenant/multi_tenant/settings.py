@@ -15,6 +15,7 @@ ALLOWED_HOSTS = ['.localhost', '127.0.0.1']
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:5173",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -27,6 +28,7 @@ CORS_ALLOW_HEADERS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:5173",
 ]
 
 PUBLIC_SCHEMA_NAME = 'public'
@@ -40,7 +42,7 @@ ROOT_URLCONF = 'multi_tenant.urls'
 
 
 
-# ... existing code above ...
+
 
 SHARED_APPS = [
     'django_tenants',
@@ -56,13 +58,15 @@ SHARED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 ]
 
 TENANT_APPS = [
     'django.contrib.contenttypes',
     'accounts', 
-    'rest_framework_simplejwt.token_blacklist',
+    
 ]
 
 INSTALLED_APPS = []
@@ -74,7 +78,6 @@ for app in TENANT_APPS:
     if app not in INSTALLED_APPS:
         INSTALLED_APPS.append(app)
 
-# Ensure this matches your unified model class name in accounts/models.py
 AUTH_USER_MODEL = 'accounts.User' 
 
 
