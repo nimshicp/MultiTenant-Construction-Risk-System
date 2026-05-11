@@ -1,7 +1,7 @@
 // src/api/auth.js
 
 import axios from "axios";
-import api from "../axios";
+import api from "./axios";
 
 /**
  * Returns backend URL based on company subdomain.
@@ -11,7 +11,7 @@ import api from "../axios";
  * - buildtech.localhost:3000  -> http://buildtech.localhost:8000
  * - myntra.localhost:3000     -> http://myntra.localhost:8000
  */
-const getBackendUrl = (company = null) => {
+export const getBackendUrl = (company = null) => {
   // If company is explicitly provided, use it
   if (company && company.trim() !== "") {
     return `http://${company}.localhost:8000`;
@@ -54,7 +54,13 @@ export const login = async ({ email, password, company = null }) => {
     }
   );
 
-  const { access, user } = response.data;
+  const { access, user, user_type } = response.data;
+
+  // Fallback if the database user doesn't have a role set 
+  // (e.g. created via python manage.py createsuperuser)
+  if (!user.role) {
+    user.role = user_type === "SUPER_ADMIN" ? "SUPER_ADMIN" : "COMPANY_ADMIN";
+  }
 
   // Save access token and user info
   localStorage.setItem("access", access);
@@ -130,8 +136,10 @@ export const restoreSession = async () => {
 
   // Try to refresh using HttpOnly refresh token cookie
   try {
+    const company = localStorage.getItem("company") || null;
+
     const response = await axios.post(
-      `${getBackendUrl()}/api/auth/refresh/`,
+      `${getBackendUrl(company)}/api/auth/refresh/`,
       {},
       {
         withCredentials: true,

@@ -66,6 +66,7 @@ SHARED_APPS = [
 TENANT_APPS = [
     'django.contrib.contenttypes',
     'accounts', 
+    'projects',
     
 ]
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
   const { login } = useAuth();
@@ -34,9 +34,15 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Login with company name, email, and password
+      // If company field is empty, send null (used for SUPER_ADMIN login)
+      const company =
+        formData.company.trim() === ""
+          ? null
+          : formData.company.trim().toLowerCase();
+
+      // Login with company, email, and password
       const data = await login(
-        formData.company.trim().toLowerCase(),
+        company,
         formData.email,
         formData.password
       );
@@ -54,6 +60,7 @@ const Login = () => {
     } catch (err) {
       setError(
         err?.response?.data?.detail ||
+          err?.detail ||
           "Login failed. Check your credentials."
       );
     } finally {
@@ -78,15 +85,14 @@ const Login = () => {
           </p>
         )}
 
-        {/* Company Name */}
+        {/* Company Name (Optional for Platform Admin) */}
         <input
           type="text"
           name="company"
-          placeholder="Company Name (e.g. buildtech)"
+          placeholder="Company Name (optional for Platform Admin)"
           value={formData.company}
           onChange={handleChange}
           className="mb-4 w-full rounded border p-2"
-          required
         />
 
         {/* Email */}
@@ -119,6 +125,17 @@ const Login = () => {
         >
           {loading ? "Signing In..." : "Sign In"}
         </button>
+
+        {/* Signup Link */}
+        <p className="mt-6 text-center text-sm text-gray-600">
+          Don't have a company account?{" "}
+          <Link
+            to="/signup"
+            className="font-semibold text-blue-600 hover:underline"
+          >
+            Create Company
+          </Link>
+        </p>
       </form>
     </div>
   );
