@@ -1,7 +1,11 @@
 from django.urls import include, path
+from django.contrib import admin
+
 
 urlpatterns = [
-    path("api/auth/", include("authentication.urls")),
-    path("api/platform/", include("platform_admin.urls")),
-    path("api/", include("customers.urls")),
+    path('admin/', admin.site.urls),
+
+    path('auth/', include('accounts.public_urls')),
+    path('billing/', include('billing.urls'))
+
 ]

@@ -135,7 +135,7 @@ api.interceptors.response.use(
         localStorage.removeItem("user_type");
 
         // Redirect to login page
-        window.location.href = "http://localhost:3000/login";
+        window.location.href = `${window.location.origin}/login`;
 
         return Promise.reject(refreshError);
       } finally {

@@ -8,8 +8,14 @@ import Signup from "./pages/Signup";
 import PlatformDashboard from "./pages/PlatformDashboard";
 import CompanyDashboard from "./pages/CompanyDashboard";
 import Projects from "./pages/Projects";
+import ProjectDetails from "./pages/ProjectDetails";
 import ProjectManagerDashboard from "./pages/ProjectManagerDashboard";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
 import TeamManagement from "./pages/TeamManagement";
+import AcceptInvitation from "./pages/AcceptInvitation";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import LandingPage from "./pages/LandingPage";
 
 // Layout & Protection
 import MainLayout from "./components/layout/MainLayout";
@@ -19,14 +25,15 @@ import RoleRoute from "./components/RoleRoute";
 // Auto-redirector for the root path
 const RootRedirect = () => {
   const { user, isAuthenticated, loading } = useAuth();
-  
+
   if (loading) return null;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  
-  if (user?.role === "SUPER_ADMIN") return <Navigate to="/platform-admin" replace />;
-  if (user?.role === "COMPANY_ADMIN") return <Navigate to="/company-dashboard" replace />;
+
+  if (user?.role === "SUPERADMIN") return <Navigate to="/platform-admin" replace />;
+  if (user?.role === "ADMIN") return <Navigate to="/company-dashboard" replace />;
   if (user?.role === "PROJECT_MANAGER") return <Navigate to="/project-manager-dashboard" replace />;
-  
+  if (user?.role === "EMPLOYEE") return <Navigate to="/employee-dashboard" replace />;
+
   return <Navigate to="/login" replace />;
 };
 
@@ -38,6 +45,9 @@ function App() {
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
 
           {/* Protected Routes inside the Main Layout */}
           <Route element={
@@ -45,44 +55,56 @@ function App() {
               <MainLayout />
             </ProtectedRoute>
           }>
-            
+
             {/* SUPER ADMIN Routes */}
             <Route path="/platform-admin" element={
-              <RoleRoute allowedRoles={["SUPER_ADMIN"]}>
+              <RoleRoute allowedRoles={["SUPERADMIN"]}>
                 <PlatformDashboard />
               </RoleRoute>
             } />
 
             {/* COMPANY ADMIN Routes */}
             <Route path="/company-dashboard" element={
-              <RoleRoute allowedRoles={["COMPANY_ADMIN"]}>
+              <RoleRoute allowedRoles={["ADMIN"]}>
                 <CompanyDashboard />
               </RoleRoute>
             } />
             <Route path="/company-dashboard/projects" element={
-              <RoleRoute allowedRoles={["COMPANY_ADMIN"]}>
+              <RoleRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "EMPLOYEE", "VIEWER"]}>
                 <Projects />
               </RoleRoute>
             } />
+            <Route path="/company-dashboard/projects/:projectId" element={
+              <RoleRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "EMPLOYEE", "VIEWER"]}>
+                <ProjectDetails />
+              </RoleRoute>
+            } />
             <Route path="/company-dashboard/team" element={
-              <RoleRoute allowedRoles={["COMPANY_ADMIN"]}>
+              <RoleRoute allowedRoles={["ADMIN"]}>
                 <TeamManagement />
               </RoleRoute>
             } />
 
             {/* PROJECT MANAGER Routes */}
             <Route path="/project-manager-dashboard" element={
-              <RoleRoute allowedRoles={["PROJECT_MANAGER"]}>
+              <RoleRoute allowedRoles={["PROJECT_MANAGER", "ADMIN"]}>
                 <ProjectManagerDashboard />
               </RoleRoute>
             } />
-            
+
+            {/* EMPLOYEE Routes */}
+            <Route path="/employee-dashboard" element={
+              <RoleRoute allowedRoles={["EMPLOYEE", "ADMIN"]}>
+                <EmployeeDashboard />
+              </RoleRoute>
+            } />
+
           </Route>
 
           {/* Root catch-all */}
-          <Route path="/" element={<RootRedirect />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
-          
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Client, Domain
+from .models import Tenant, Domain
 
-admin.site.register(Client)
+admin.site.register(Tenant)
 admin.site.register(Domain)

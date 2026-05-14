@@ -1,0 +1,13 @@
+warning: in the working copy of 'backend/multi_tenant/authentication/views.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/multi_tenant/multi_tenant/settings.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/multi_tenant/multi_tenant/urls.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/App.jsx', LF will be replaced by CRLF the next time Git touches it
+backend/multi_tenant/authentication/views.py
+backend/multi_tenant/multi_tenant/__pycache__/settings.cpython-314.pyc
+backend/multi_tenant/multi_tenant/__pycache__/urls.cpython-314.pyc
+backend/multi_tenant/multi_tenant/settings.py
+backend/multi_tenant/multi_tenant/urls.py
+frontend/src/App.jsx
+frontend/src/api/auth.js
+frontend/src/api/platform.js
+frontend/src/pages/Login.jsx

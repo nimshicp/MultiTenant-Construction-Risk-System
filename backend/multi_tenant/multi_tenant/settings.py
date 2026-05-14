@@ -14,11 +14,11 @@ DEBUG = True
 ALLOWED_HOSTS = ['.localhost', '127.0.0.1']
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
-CORS_ALLOW_CREDENTIALS = True
+
 
 CORS_ALLOW_HEADERS = [
     "authorization",
@@ -27,9 +27,15 @@ CORS_ALLOW_HEADERS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://.*\.localhost:5173$",
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 PUBLIC_SCHEMA_NAME = 'public'
 PUBLIC_SCHEMA_URLCONF = 'multi_tenant.public_urls'
@@ -48,9 +54,9 @@ SHARED_APPS = [
     'django_tenants',
     'customers',
     'platform_admin',
-    'authentication',
     'accounts', 
-
+    'billing',
+    'django.contrib.admin',  
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.sessions',
@@ -59,31 +65,27 @@ SHARED_APPS = [
 
     'rest_framework',
 
-    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 ]
 
 TENANT_APPS = [
     'django.contrib.contenttypes',
-    'accounts', 
+    'django.contrib.auth',
+    'employee', 
     'projects',
     
 ]
 
-INSTALLED_APPS = []
-for app in SHARED_APPS:
-    if app not in INSTALLED_APPS:
-        INSTALLED_APPS.append(app)
-
-for app in TENANT_APPS:
-    if app not in INSTALLED_APPS:
-        INSTALLED_APPS.append(app)
+INSTALLED_APPS = SHARED_APPS + [
+    app for app in TENANT_APPS
+    if app not in SHARED_APPS
+]
 
 AUTH_USER_MODEL = 'accounts.User' 
 
 
 
-TENANT_MODEL = "customers.Client"
+TENANT_MODEL = "customers.Tenant"
 TENANT_DOMAIN_MODEL = "customers.Domain"
 
 DATABASE_ROUTERS = (
@@ -111,31 +113,15 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-
-    'UPDATE_LAST_LOGIN': True,
-
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
-
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
-
-    'AUTH_TOKEN_CLASSES': (
-        'rest_framework_simplejwt.tokens.AccessToken',
-    ),
-
-    'TOKEN_TYPE_CLAIM': 'token_type',
-    'JTI_CLAIM': 'jti',
+    'AUTH_HEADER_TYPES': ['Bearer'],
+    'AUTH_COOKIE': 'access', # Matches the 'response.set_cookie' key
+    'AUTH_COOKIE_REFRESH': 'refresh', # Matches the 'response.set_cookie' key
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_SAMESITE': 'Lax',
 }
 
-COOKIE_SECURE = False  # True in production (HTTPS)
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
-
-REFRESH_TOKEN_LIFETIME = 7 * 24 * 60 * 60  
+ 
 
 
 MIDDLEWARE = [
@@ -221,3 +207,7 @@ DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
     EMAIL_HOST_USER
 )
+
+
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_SECRET')

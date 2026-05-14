@@ -7,9 +7,9 @@ import api from "./axios";
  * Returns backend URL based on company subdomain.
  *
  * Examples:
- * - localhost:3000            -> http://localhost:8000
- * - buildtech.localhost:3000  -> http://buildtech.localhost:8000
- * - myntra.localhost:3000     -> http://myntra.localhost:8000
+ * - localhost:5173            -> http://localhost:8000
+ * - buildtech.localhost:5173  -> http://buildtech.localhost:8000
+ * - abc.localhost:5173        -> http://abc.localhost:8000
  */
 export const getBackendUrl = (company = null) => {
   // If company is explicitly provided, use it
@@ -37,11 +37,11 @@ export const getBackendUrl = (company = null) => {
  *
  * Refresh token is NOT stored manually because it is in HttpOnly cookie.
  */
-export const login = async ({ email, password, company = null }) => {
-  const baseURL = getBackendUrl(company);
+export const login = async ({ email, password }) => {
+  const baseURL = getBackendUrl();
 
   const response = await axios.post(
-    `${baseURL}/api/auth/login/`,
+    `${baseURL}/auth/login/`,
     {
       email,
       password,
@@ -54,20 +54,41 @@ export const login = async ({ email, password, company = null }) => {
     }
   );
 
-  const { access, user, user_type } = response.data;
+  // MFA flow (optional for future use)
+  if (response.status === 202 && response.data.mfa_required) {
+    return response.data;
+  }
 
-  // Fallback if the database user doesn't have a role set 
-  // (e.g. created via python manage.py createsuperuser)
+  const access = response.data.tokens.access;
+  const user = response.data.data;
+
+  // Use role from backend, or determine based on subdomain if missing
   if (!user.role) {
-    user.role = user_type === "SUPER_ADMIN" ? "SUPER_ADMIN" : "COMPANY_ADMIN";
+    user.role =
+      user.subdomain === "admin"
+        ? "SUPER_ADMIN"
+        : "COMPANY_ADMIN";
   }
 
   // Save access token and user info
   localStorage.setItem("access", access);
   localStorage.setItem("user", JSON.stringify(user));
-  localStorage.setItem("company", company || "");
 
-  return response.data;
+  // Save tenant/company identifier for future API calls
+  // Examples:
+  // - admin  -> ""
+  // - abc    -> "abc"
+  // - buildtech -> "buildtech"
+  localStorage.setItem(
+    "company",
+    user.subdomain === "admin" ? "" : user.subdomain
+  );
+
+  return {
+    user,
+    access,
+    message: response.data.message,
+  };
 };
 
 /**
@@ -78,7 +99,7 @@ export const login = async ({ email, password, company = null }) => {
  */
 export const logout = async () => {
   try {
-    await api.post("/api/auth/logout/", {});
+    await api.post("/auth/logout/", {});
   } catch (error) {
     // Even if backend logout fails, clear frontend session
     console.error("Logout error:", error);
@@ -86,6 +107,9 @@ export const logout = async () => {
     localStorage.removeItem("access");
     localStorage.removeItem("user");
     localStorage.removeItem("company");
+
+    // Always redirect back to the public (root) domain login page
+    window.location.href = "http://localhost:5173/login";
   }
 };
 
@@ -159,4 +183,25 @@ export const restoreSession = async () => {
 
     return null;
   }
+};
+
+/**
+ * Request Password Reset
+ */
+export const requestPasswordReset = async (email) => {
+  const baseURL = getBackendUrl();
+  const response = await axios.post(`${baseURL}/auth/password-reset/`, { email });
+  return response.data;
+};
+
+/**
+ * Confirm Password Reset
+ */
+export const confirmPasswordReset = async (token, password, confirm_password) => {
+  const baseURL = getBackendUrl();
+  const response = await axios.post(`${baseURL}/auth/password-reset-confirm/${token}/`, { 
+    password, 
+    confirm_password 
+  });
+  return response.data;
 };
